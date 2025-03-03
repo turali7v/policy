@@ -7,7 +7,6 @@ on:
   pull_request:
     branches:
       - main
-      - develop
   workflow_call:
     inputs:
       image_version:
@@ -43,7 +42,8 @@ jobs:
     name: 'Deploy'
     permissions: write-all
     needs: [set-enviroment]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'pull_request'
+    if: github.ref == 'refs/heads/main' 
+    #&& github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:
