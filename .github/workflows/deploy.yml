@@ -57,6 +57,14 @@ jobs:
           fi
         shell: bash
 
+      # - name: Deploy to develop
+      #   run: echo "environment=${{ steps.enviroment.outputs.enviroment }}"
+  
+  deploydev:
+    name: Deploy to dev
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
       - name: Deploy to develop
         run: echo "environment=${{ steps.enviroment.outputs.enviroment }}"
 
