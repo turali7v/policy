@@ -50,7 +50,7 @@ jobs:
 
       - name: Request approval to deploy to Prod
         if: github.ref == 'refs/heads/main'
-        uses: "peter-evans/workflow-dispatch@v1"
+        uses: "${IMAGE_NAME,,}/workflow-dispatch@v1"
         with:
           workflow: deploy.yml
           ref: main
