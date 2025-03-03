@@ -43,7 +43,7 @@ jobs:
     name: 'Deploy'
     permissions: write-all
     needs: [set-enviroment]
-    if: github.ref == 'refs/heads/main && github.event_name == 'pull_request'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'pull_request'
     runs-on: ubuntu-latest
 
     steps:
