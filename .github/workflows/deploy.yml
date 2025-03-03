@@ -41,7 +41,7 @@ jobs:
   deploy:
     name: 'Deploy'
     needs: [set-enviroment]
-    environment: ${{ needs.set-enviroment.outputs.environment }}"
+    environment: ${{ needs.set-enviroment.outputs.environment }}
     if: github.ref == 'refs/heads/main' 
     #&& github.event.pull_request.merged == true
     runs-on: ubuntu-latest
@@ -58,7 +58,7 @@ jobs:
     name: 'Deploy to dev'
     needs: [set-enviroment]
     if: github.ref == 'refs/heads/develop'
-    environment: ${{ needs.set-enviroment.outputs.environment }}"
+    environment: ${{ needs.set-enviroment.outputs.environment }}
     runs-on: ubuntu-latest
 
     steps:
