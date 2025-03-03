@@ -58,7 +58,9 @@ jobs:
     name: 'Deploy to dev'
     needs: [set-enviroment]
     # if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.repository != github.event.pull_request.head.repo.full_name)
+    # if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.repository != github.event.pull_request.head.repo.full_name)
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push' && contains(github.event.head_commit.message, 'Merge') == false
+
     environment: ${{ needs.set-enviroment.outputs.environment }}
     runs-on: ubuntu-latest
 
