@@ -50,7 +50,7 @@ jobs:
 
       - name: Request approval to deploy to Prod
         if: github.ref == 'refs/heads/main'
-        uses: "${IMAGE_NAME,,}/workflow-dispatch@v1"
+        uses: "turali7v/policy/workflow-dispatch@v1"
         with:
           workflow: deploy.yml
           ref: main
@@ -89,7 +89,7 @@ jobs:
       
       - name: Helm Upgrade Dev
         if: github.ref == 'refs/heads/develop'
-        run: echo "This is dev environment"
+        run: echo "This is dev environment and reponame is ${IMAGE_NAME}"
 
       # - name: Chart Packaging
       #   run: helm package ./chart/ --version ${{ env.VERSION }}
