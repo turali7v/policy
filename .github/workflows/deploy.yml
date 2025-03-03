@@ -72,12 +72,12 @@ jobs:
       - name: Set up Kubeconfig for DEV
         run: |
           if [[ ${{ needs.enviromentselection.outputs.enviroment }} == development ]]; then
-            run: echo "environment=${{ needs.enviromentselection.outputs.enviroment }}"
+            echo "environment=${{ needs.enviromentselection.outputs.enviroment }}"
             # mkdir -p $HOME/.kube
             # echo "${{ secrets.KUBE_CONFIG_DEV }}" > $HOME/.kube/config
             # chmod 600 $HOME/.kube/config
           else
-            run: echo "prod"
+            echo "prod"
             # mkdir -p $HOME/.kube
             # echo "${{ secrets.KUBE_CONFIG }}" > $HOME/.kube/config
             # chmod 600 $HOME/.kube/config
