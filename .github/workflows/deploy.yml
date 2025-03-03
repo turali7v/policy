@@ -69,18 +69,19 @@ jobs:
         if: ${{ needs.enviromentselection.outputs.enviroment }} == development
         run: echo "environment=${{ needs.enviromentselection.outputs.enviroment }}"
 
-      # - name: Set up Kubeconfig for DEV
-      #   if: ${{ needs.enviromentselection.outputs.enviroment }} == development
-      #   run: |
-      #     mkdir -p $HOME/.kube
-      #     echo "${{ secrets.KUBE_CONFIG_DEV }}" > $HOME/.kube/config
-      #     chmod 600 $HOME/.kube/config
-      #   # run: |
-        #   if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
-        #     echo "ENV=development" >> $GITHUB_ENV
-        #   else
-        #     echo "ENV=production" >> $GITHUB_ENV
-        #   fi
+      - name: Set up Kubeconfig for DEV
+        run: |
+          if [[ ${{ needs.enviromentselection.outputs.enviroment }} == development ]]; then
+            run: echo "environment=${{ needs.enviromentselection.outputs.enviroment }}"
+            # mkdir -p $HOME/.kube
+            # echo "${{ secrets.KUBE_CONFIG_DEV }}" > $HOME/.kube/config
+            # chmod 600 $HOME/.kube/config
+          else
+            run: echo "prod"
+            # mkdir -p $HOME/.kube
+            # echo "${{ secrets.KUBE_CONFIG }}" > $HOME/.kube/config
+            # chmod 600 $HOME/.kube/config
+          fi
 
       # - name: Set up Kubeconfig for Prod
       #   if: github.ref == 'refs/heads/main' && environment=production
