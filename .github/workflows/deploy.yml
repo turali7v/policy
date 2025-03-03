@@ -29,7 +29,7 @@ env:
   GITHUB_TOKEN: ${{ secrets.MY_GITHUB_PAT }}
 
 jobs:
-  deploy:
+  enviromentselection:
     name: Deploy
     runs-on: ubuntu-latest
     outputs:
@@ -57,8 +57,6 @@ jobs:
           fi
         shell: bash
 
-      # - name: Deploy to develop
-      #   run: echo "environment=${{ steps.enviroment.outputs.enviroment }}"
   
   deploydev:
     name: Deploy to dev
@@ -66,7 +64,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Deploy to develop
-        run: echo "environment=${{ steps.enviroment.outputs.enviroment }}"
+        run: echo "environment=${{ needs.enviromentselection.outputs.enviroment }}"
 
       # - name: Set up Kubeconfig for DEV
       #   if: github.ref == 'refs/heads/develop'
