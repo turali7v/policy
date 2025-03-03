@@ -6,10 +6,10 @@ on:
       - develop
   workflow_call:
     inputs:
-      environment:
-        description: Environment to Deploy
-        required: true
-        type: string
+      # environment:
+      #   description: Environment to Deploy
+      #   required: true
+      #   type: string
 
       image_version:
         description: Docker Image Version
@@ -19,12 +19,12 @@ on:
 
   workflow_dispatch:
     inputs:
-      environment:
-        description: Environment to Deploy
-        required: true
-        type: choice
-        options:
-          - prod
+      # environment:
+      #   description: Environment to Deploy
+      #   required: true
+      #   type: choice
+      #   options:
+      #     - prod
 
       image_version:
         description: Docker Image Version
@@ -43,6 +43,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set up environment variables
+        run: |
+          echo "TARGET_ENV=${{ github.ref }}" >> $GITHUB_ENV
+
+      - name: Request approval to deploy to Prod
+        if: github.ref == 'refs/heads/main'
+        uses: "peter-evans/workflow-dispatch@v1"
+        with:
+          workflow: deploy.yml
+          ref: main
 
       - name: Set up Kubeconfig for Prod
         if: github.ref == 'refs/heads/main'
