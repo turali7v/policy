@@ -14,6 +14,7 @@ on:
         required: true
         type: string
 
+
   workflow_dispatch:
     inputs:
       image_version:
@@ -25,49 +26,82 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  GITHUB_TOKEN: ${{ secrets.MY_GITHUB_PAT }}
 
 jobs:
-  set-enviroment: 
-    name: Set enviroment
+  deploy:
+    name: Deploy
     runs-on: ubuntu-latest
     outputs:
-      environment: ${{ steps.set-env.outputs.enviroment }}
-
+      handle: ${{ steps.enviroment.outputs.enviroment }}
+    
     steps:
-      - name: Set enviroment
-        id: set-env
-        uses: turali7v/policy/.github/actions/set-enviroment@main
+      - uses: actions/checkout@v4
+      - name: Set Enviroment
+        id: enviroment
+        run: |
+          BRANCH_NAME=""
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            BRANCH_NAME=${{ github.base_ref }}
+          else
+            BRANCH_NAME=${{ github.ref }}
+          fi
 
-  deploy:
-    name: 'Deploy'
-    needs: [set-enviroment]
-    environment: ${{ needs.set-enviroment.outputs.environment }}
-    if: github.ref == 'refs/heads/main' 
-    #&& github.event.pull_request.merged == true
-    runs-on: ubuntu-latest
+          if [[ "$BRANCH_NAME" == "main" || "$BRANCH_NAME" == "refs/heads/main" ]]; then
+            echo "enviroment=production" >> $GITHUB_OUTPUT
+          elif [[ "$BRANCH_NAME" == "develop" || "$BRANCH_NAME" == "refs/heads/develop" ]]; then
+            echo "enviroment=development" >> $GITHUB_OUTPUT
+          else 
+            echo "Unknown branch name: $BRANCH_NAME"
+            exit 1
+          fi
+        shell: bash
 
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+      - name: Deploy to develop
+        run: echo "environment=${{ steps.enviroment.outputs.enviroment }}"
 
-    - name: Deploy to Prod
-      run: |
-        echo "Deploying to production and environment=${{ needs.set-enviroment.outputs.environment }}"
+      # - name: Set up Kubeconfig for DEV
+      #   if: github.ref == 'refs/heads/develop'
+      #   run: |
+      #     mkdir -p $HOME/.kube
+      #     echo "${{ secrets.KUBE_CONFIG_DEV }}" > $HOME/.kube/config
+      #     chmod 600 $HOME/.kube/config
 
-  dev:
-    name: 'Deploy to dev'
-    needs: [set-enviroment]
-    # if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
-    # if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.repository != github.event.pull_request.head.repo.full_name)
-    if: github.ref == 'refs/heads/develop' && github.event_name == 'push' && contains(github.event.head_commit.message, 'Merge') == false
+      # - name: Set up Kubeconfig for Prod
+      #   if: github.ref == 'refs/heads/main' && environment=production
+      #   run: |
+      #     mkdir -p $HOME/.kube
+      #     echo "${{ secrets.KUBE_CONFIG }}" > $HOME/.kube/config
+      #     chmod 600 $HOME/.kube/config
 
-    environment: ${{ needs.set-enviroment.outputs.environment }}
-    runs-on: ubuntu-latest
+      # - name: Install Helm
+      #   run: curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+      # - name: Helm Login
+      #   run: echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ${{ env.REGISTRY }} -u a-savinski  --password-stdin
 
-    - name: Deploy to dev
-      run: |
-        echo "Deploying to dev and environment=${{ needs.set-enviroment.outputs.environment }}"
+      - name: Set up Variables
+        run: |
+          export SHA=$(echo $(($RANDOM%(9999999-1000000+1)+1000000)))
+          echo "VERSION=$(echo ${{ inputs.image_version }}-$SHA)" >> $GITHUB_ENV
+          export REPO=$(echo ${IMAGE_NAME,,})
+          echo "REPO_NAME=$(echo $REPO | awk -F'/' '{print $1}')" >> $GITHUB_ENV
+          echo "SERVICE_NAME=$(echo $REPO | awk -F'/' '{print $NF}' | cut -d'-' -f2)" >> $GITHUB_ENV
+
+      # - name: Chart Packaging
+      #   run: helm package ./chart/ --version ${{ env.VERSION }}
+
+      # - name: Push Helm Package
+      #   run: helm push *-${{ env.VERSION }}.tgz oci://${{ env.REGISTRY }}/${{ env.REPO_NAME }}/helm
+
+      # # after ci pipeline the container registry need some time to show container images
+      # - name: Wait for 30 seconds
+      #   run: sleep 30
+
+      # - name: Helm Upgrade
+      #   run: helm upgrade --install --namespace ${{ inputs.environment }} --set image.tag=${{ inputs.image_version }} --version ${{ env.VERSION }} ${{ env.SERVICE_NAME }} oci://${{ env.REGISTRY }}/${{ env.REPO_NAME }}/helm/${{ env.SERVICE_NAME }}
+
+      # - name: Deploy Results
+      #   run: |
+      #     echo Deployed Docker Image: ${{ inputs.image_version }}
+      #     echo Helm Chart: ${{ env.VERSION }}
