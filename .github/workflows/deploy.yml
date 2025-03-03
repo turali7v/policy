@@ -62,17 +62,25 @@ jobs:
     needs: enviromentselection
     name: Deploy to dev
     runs-on: ubuntu-latest
+    environment: ${{ needs.enviromentselection.outputs.enviroment }}
     steps:
       - uses: actions/checkout@v4
       - name: Deploy to develop
+        if: ${{ needs.enviromentselection.outputs.enviroment }} == development
         run: echo "environment=${{ needs.enviromentselection.outputs.enviroment }}"
 
       # - name: Set up Kubeconfig for DEV
-      #   if: github.ref == 'refs/heads/develop'
+      #   if: ${{ needs.enviromentselection.outputs.enviroment }} == development
       #   run: |
       #     mkdir -p $HOME/.kube
       #     echo "${{ secrets.KUBE_CONFIG_DEV }}" > $HOME/.kube/config
       #     chmod 600 $HOME/.kube/config
+      #   # run: |
+        #   if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+        #     echo "ENV=development" >> $GITHUB_ENV
+        #   else
+        #     echo "ENV=production" >> $GITHUB_ENV
+        #   fi
 
       # - name: Set up Kubeconfig for Prod
       #   if: github.ref == 'refs/heads/main' && environment=production
