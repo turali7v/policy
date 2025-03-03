@@ -57,7 +57,7 @@ jobs:
   dev:
     name: 'Deploy to dev'
     needs: [set-enviroment]
-    if: github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
     environment: ${{ needs.set-enviroment.outputs.environment }}
     runs-on: ubuntu-latest
 
