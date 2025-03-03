@@ -4,6 +4,10 @@ on:
     branches:
       - main
       - develop
+  pull_request:
+    branches:
+      - main
+      - develop
   workflow_call:
     inputs:
       image_version:
@@ -24,41 +28,43 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  deploy:
-    name: Deploy
+  set-enviroment: 
+    name: Set enviroment
     runs-on: ubuntu-latest
-    # environment: ${{ github.ref == 'refs/heads/develop' && 'dev' || 'prod' }}
-    # if: github.ref == 'refs/heads/develop' || (github.event.pull_request.merged == true && github.ref == 'refs/heads/main')
+    outputs:
+      environment: ${{ steps.set-env.outputs.enviroment }}
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Set enviroment
+        id: set-env
+        uses: turali7v/policy/.github/actions/set-enviroment@main
 
-      - name: Set up environment variables
-        run: |
-          echo "TARGET_ENV=${{ github.ref }}" >> $GITHUB_ENV
+  deploy:
+    name: 'Deploy'
+    permissions: write-all
+    needs: [set-enviroment]
+    if: github.event_name == 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
 
-      - name: Deploy to Dev
-        if: github.ref == 'refs/heads/develop'
-        run: |
-          echo "Deploying to dev environment and $DEPLOY_ENV"
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
 
-      - name: Deploy to Prod
-        if: github.event.pull_request.merged == true && github.ref == 'refs/heads/main'
-        # if: github.ref == 'refs/heads/main'
-        run: |
-          echo "Deploying to production and $DEPLOY_ENV"
+    - name: Deploy to Prod
+      run: |
+        echo "Deploying to production and environment=${{ needs.set-enviroment.outputs.environment }}"
 
-      - name: Set up Variables
-        run: |
-          export SHA=$(echo $(($RANDOM%(9999999-1000000+1)+1000000)))
-          # echo "VERSION=$(echo ${{ inputs.image_version }}-$SHA)" >> $GITHUB_ENV
-          export REPO=$(echo ${IMAGE_NAME,,})
-          echo "REPO_NAME=$(echo $REPO | awk -F'/' '{print $1}')" >> $GITHUB_ENV
-          echo "SERVICE_NAME=$(echo $REPO | awk -F'/' '{print $NF}' | cut -d'-' -f2)" >> $GITHUB_ENV
-      
-      # - name: Helm Upgrade Prod
-      #   if: github.ref == 'refs/heads/main'
-      #   run: echo "This is prod"
-      
-      # - name: Helm Upgrade Dev
-      #   if: github.ref == 'refs/heads/develop'
-      #   run: echo "This is dev environment and reponame is ${IMAGE_NAME}"
+  dev:
+    name: 'Deploy to dev'
+    permissions: write-all
+    needs: [set-enviroment]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Deploy to Prod
+      run: |
+        echo "Deploying to dev and environment=${{ needs.set-enviroment.outputs.environment }}"
