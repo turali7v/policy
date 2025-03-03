@@ -2,8 +2,10 @@ name: Deploy
 on:
   push:
     branches:
-      - main
       - develop
+  pull_request:
+    branches:
+      - main
   workflow_call:
     inputs:
       # environment:
@@ -41,6 +43,8 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
+    environment: 
+      name: ${{ github.event_name == 'push' && 'dev' || 'prod' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -48,26 +52,16 @@ jobs:
         run: |
           echo "TARGET_ENV=${{ github.ref }}" >> $GITHUB_ENV
 
-      - name: Request approval to deploy to Prod
-        if: github.ref == 'refs/heads/main'
-        uses: "turali7v/policy/workflow-dispatch@v1"
-        with:
-          workflow: deploy.yml
-          ref: main
+      - name: Deploy to Dev
+        if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+        run: |
+          echo "Deploying to dev environment"
 
-      - name: Set up Kubeconfig for Prod
-        if: github.ref == 'refs/heads/main'
+      - name: Deploy to Prod
+        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
         run: |
-          mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBE_CONFIG }}" > $HOME/.kube/config
-          chmod 600 $HOME/.kube/config
-      
-      - name: Set up Kubeconfig for DEV
-        if: github.ref == 'refs/heads/develop'
-        run: |
-          mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBE_CONFIG_DEV }}" > $HOME/.kube/config
-          chmod 600 $HOME/.kube/config
+          echo "Deploying to production"
+    
 
       # - name: Install Helm
       #   run: curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
