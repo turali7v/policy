@@ -4,9 +4,9 @@ on:
     branches:
       - main
       - develop
-  pull_request:
-    branches:
-      - main
+  # pull_request:
+  #   branches:
+  #     - main
   workflow_call:
     inputs:
       image_version:
