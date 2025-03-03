@@ -43,8 +43,6 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    environment: 
-      name: ${{ github.event_name == 'push' && 'dev' || 'prod' }}
     steps:
       - uses: actions/checkout@v4
 
