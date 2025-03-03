@@ -4,6 +4,8 @@ on:
     branches:
       - develop
   pull_request:
+    types:
+      - closed
     branches:
       - main
   workflow_call:
@@ -29,6 +31,8 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
+    environment: ${{ github.ref == 'refs/heads/develop' && 'dev' || 'prod' }}
+    if: github.ref == 'refs/heads/develop' || (github.event.pull_request.merged == true && github.ref == 'refs/heads/main')
     steps:
       - uses: actions/checkout@v4
 
@@ -37,15 +41,12 @@ jobs:
           echo "TARGET_ENV=${{ github.ref }}" >> $GITHUB_ENV
 
       - name: Deploy to Dev
-        if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+        if: github.ref == 'refs/heads/develop'
         run: |
           echo "Deploying to dev environment"
 
       - name: Deploy to Prod
-        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
-        with:
-          ref: ${{ github.event.pull_request.base.ref }}  # Ensures checkout of main branch after merge
-          fetch-depth: 0
+        if: github.event.pull_request.merged == true && github.ref == 'refs/heads/main'
         run: |
           echo "Deploying to production"
 
@@ -57,10 +58,10 @@ jobs:
           echo "REPO_NAME=$(echo $REPO | awk -F'/' '{print $1}')" >> $GITHUB_ENV
           echo "SERVICE_NAME=$(echo $REPO | awk -F'/' '{print $NF}' | cut -d'-' -f2)" >> $GITHUB_ENV
       
-      - name: Helm Upgrade Prod
-        if: github.ref == 'refs/heads/main'
-        run: echo "This is prod"
+      # - name: Helm Upgrade Prod
+      #   if: github.ref == 'refs/heads/main'
+      #   run: echo "This is prod"
       
-      - name: Helm Upgrade Dev
-        if: github.ref == 'refs/heads/develop'
-        run: echo "This is dev environment and reponame is ${IMAGE_NAME}"
+      # - name: Helm Upgrade Dev
+      #   if: github.ref == 'refs/heads/develop'
+      #   run: echo "This is dev environment and reponame is ${IMAGE_NAME}"
