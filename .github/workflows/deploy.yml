@@ -40,7 +40,6 @@ jobs:
 
   deploy:
     name: 'Deploy'
-    permissions: write-all
     needs: [set-enviroment]
     if: github.ref == 'refs/heads/main' 
     #&& github.event.pull_request.merged == true
@@ -56,7 +55,6 @@ jobs:
 
   dev:
     name: 'Deploy to dev'
-    permissions: write-all
     needs: [set-enviroment]
     if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest

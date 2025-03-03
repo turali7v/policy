@@ -20,9 +20,9 @@ runs:
         fi
                 
         if [[ "$BRANCH_NAME" == "main" || "$BRANCH_NAME" == "refs/heads/main" ]]; then
-          echo "enviroment=prod" >> $GITHUB_OUTPUT
+          echo "enviroment=production" >> $GITHUB_OUTPUT
         elif [[ "$BRANCH_NAME" == "develop" || "$BRANCH_NAME" == "refs/heads/develop" ]]; then
-          echo "enviroment=dev" >> $GITHUB_OUTPUT
+          echo "enviroment=development" >> $GITHUB_OUTPUT
         else 
           echo "Unknown branch name: $BRANCH_NAME"
           exit 1
