@@ -59,6 +59,7 @@ jobs:
 
   
   deploydev:
+    needs: enviromentselection
     name: Deploy to dev
     runs-on: ubuntu-latest
     steps:
