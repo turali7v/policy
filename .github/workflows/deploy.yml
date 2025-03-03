@@ -58,13 +58,13 @@ jobs:
     name: 'Deploy to dev'
     permissions: write-all
     needs: [set-enviroment]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Deploy to Prod
+    - name: Deploy to dev
       run: |
         echo "Deploying to dev and environment=${{ needs.set-enviroment.outputs.environment }}"
