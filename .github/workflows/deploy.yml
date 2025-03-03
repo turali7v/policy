@@ -27,8 +27,8 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    environment: ${{ github.ref == 'refs/heads/develop' && 'dev' || 'prod' }}
-    if: github.ref == 'refs/heads/develop' || (github.event.pull_request.merged == true && github.ref == 'refs/heads/main')
+    # environment: ${{ github.ref == 'refs/heads/develop' && 'dev' || 'prod' }}
+    # if: github.ref == 'refs/heads/develop' || (github.event.pull_request.merged == true && github.ref == 'refs/heads/main')
     steps:
       - uses: actions/checkout@v4
 
