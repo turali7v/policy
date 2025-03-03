@@ -8,26 +8,13 @@ on:
       - main
   workflow_call:
     inputs:
-      # environment:
-      #   description: Environment to Deploy
-      #   required: true
-      #   type: string
-
       image_version:
         description: Docker Image Version
         required: true
         type: string
 
-
   workflow_dispatch:
     inputs:
-      # environment:
-      #   description: Environment to Deploy
-      #   required: true
-      #   type: choice
-      #   options:
-      #     - prod
-
       image_version:
         description: Docker Image Version
         required: true
@@ -37,7 +24,6 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  # GITHUB_TOKEN: ${{ secrets.MY_GITHUB_PAT }}
 
 jobs:
   deploy:
@@ -57,15 +43,11 @@ jobs:
 
       - name: Deploy to Prod
         if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}  # Ensures checkout of main branch after merge
+          fetch-depth: 0
         run: |
           echo "Deploying to production"
-    
-
-      # - name: Install Helm
-      #   run: curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-
-      # - name: Helm Login
-      #   run: echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ${{ env.REGISTRY }} -u a-savinski  --password-stdin
 
       - name: Set up Variables
         run: |
@@ -82,21 +64,3 @@ jobs:
       - name: Helm Upgrade Dev
         if: github.ref == 'refs/heads/develop'
         run: echo "This is dev environment and reponame is ${IMAGE_NAME}"
-
-      # - name: Chart Packaging
-      #   run: helm package ./chart/ --version ${{ env.VERSION }}
-
-      # - name: Push Helm Package
-      #   run: helm push *-${{ env.VERSION }}.tgz oci://${{ env.REGISTRY }}/${{ env.REPO_NAME }}/helm
-
-      # after ci pipeline the container registry need some time to show container images
-      # - name: Wait for 30 seconds
-      #   run: sleep 30
-
-      # - name: Helm Upgrade
-      #   run: helm upgrade --install --namespace ${{ inputs.environment }} --set image.tag=${{ inputs.image_version }} --version ${{ env.VERSION }} ${{ env.SERVICE_NAME }} oci://${{ env.REGISTRY }}/${{ env.REPO_NAME }}/helm/${{ env.SERVICE_NAME }}
-
-      - name: Deploy Results
-        run: |
-          echo Deployed Docker Image: ${{ inputs.image_version }}
-          echo Helm Chart: ${{ env.VERSION }}
