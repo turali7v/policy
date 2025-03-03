@@ -2,10 +2,8 @@ name: Deploy
 on:
   push:
     branches:
-      - develop
-  pull_request:
-    branches:
       - main
+      - develop
   workflow_call:
     inputs:
       image_version:
@@ -45,6 +43,7 @@ jobs:
 
       - name: Deploy to Prod
         if: github.event.pull_request.merged == true && github.ref == 'refs/heads/main'
+        # if: github.ref == 'refs/heads/main'
         run: |
           echo "Deploying to production and $DEPLOY_ENV"
 
