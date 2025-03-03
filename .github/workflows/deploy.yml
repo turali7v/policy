@@ -4,8 +4,6 @@ on:
     branches:
       - develop
   pull_request:
-    types:
-      - closed
     branches:
       - main
   workflow_call:
@@ -43,12 +41,12 @@ jobs:
       - name: Deploy to Dev
         if: github.ref == 'refs/heads/develop'
         run: |
-          echo "Deploying to dev environment"
+          echo "Deploying to dev environment and $DEPLOY_ENV"
 
       - name: Deploy to Prod
         if: github.event.pull_request.merged == true && github.ref == 'refs/heads/main'
         run: |
-          echo "Deploying to production"
+          echo "Deploying to production and $DEPLOY_ENV"
 
       - name: Set up Variables
         run: |
